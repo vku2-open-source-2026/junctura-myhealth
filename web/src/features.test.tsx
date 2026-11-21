@@ -143,6 +143,30 @@ describe("who has looked", () => {
   });
 });
 
+describe("download the access log", () => {
+  it("saves exactly the rows on screen as a CSV file, and is disabled when there are none", async () => {
+    const created = vi.fn(() => "blob:x");
+    URL.createObjectURL = created;
+    URL.revokeObjectURL = vi.fn();
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [entry(), entry({ id: "e2", who: "Nhà thuốc" })] });
+    wrap(<Access />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tải nhật ký (CSV)" }));
+    expect(created).toHaveBeenCalledTimes(1);
+    const blob = (created.mock.calls[0] as unknown as [Blob])[0];
+    expect(blob.type).toMatch(/text\/csv/);
+    // jsdom has no Blob.text(), so read it the old way.
+    const text = await new Promise<string>(resolve => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.readAsText(blob); });
+    expect(text).toContain("Nhà thuốc");
+    expect(click).toHaveBeenCalled();
+    cleanup();
+    vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [] });
+    wrap(<Access />);
+    expect((await screen.findByRole("button", { name: "Tải nhật ký (CSV)" }) as HTMLButtonElement).disabled).toBe(true);
+    click.mockRestore();
+  });
+});
+
 describe("emergency", () => {
   it("lists emergency accesses with their review state", async () => {
     vi.mocked(getEmergency).mockResolvedValue([entry({ emergency: true, review: "pending" }), entry({ id: "e9", who: "Bệnh viện B", emergency: true, review: "unjustified" })]);
