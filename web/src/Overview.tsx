@@ -23,6 +23,13 @@ export function Overview() {
             </AlertBanner>
           )}
 
+          {overview.flagged > 0 && (
+            <AlertBanner level="notice" title={`Bạn đã đánh dấu ${overview.flagged} lần xem không nhận ra`}
+              action={<Link to="/ai-da-xem" className="font-semibold underline">Xem lại</Link>}>
+              Nếu không muốn nơi đó xem nữa, hãy thu hồi đồng thuận ở mục Đồng thuận.
+            </AlertBanner>
+          )}
+
           <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
             <Card className="bg-brand/5">
               <p className="text-sm font-medium text-muted">Đang được phép xem dữ liệu của bạn</p>

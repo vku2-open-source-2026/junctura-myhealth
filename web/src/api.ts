@@ -44,3 +44,5 @@ export const grantConsent = (settings: OidcSettings, body: { optionId: string; p
   request<Consent>("/api/consents", settings, undefined, { method: "POST", body });
 export const revokeConsent = (settings: OidcSettings, id: string) => request<Consent>(`/api/consents/${enc(id)}/revoke`, settings, undefined, { method: "POST", body: {} });
 export const saveProfile = (settings: OidcSettings, body: ProfileInput) => request<Profile>("/api/profile", settings, undefined, { method: "PUT", body });
+export const flagAccess = (settings: OidcSettings, id: string) => request<{ id: string; flagged: boolean }>(`/api/access/${enc(id)}/flag`, settings, undefined, { method: "POST", body: {} });
+export const unflagAccess = (settings: OidcSettings, id: string) => request<{ id: string; flagged: boolean }>(`/api/access/${enc(id)}/flag`, settings, undefined, { method: "DELETE" });

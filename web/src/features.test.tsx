@@ -7,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Access } from "./Access";
 import { NAV, currentNav } from "./App";
-import { ApiError, getAccess, getConsents, getEmergency, getOptions, getOverview, getProfile, grantConsent, revokeConsent, saveProfile } from "./api";
+import { ApiError, flagAccess, getAccess, getConsents, getEmergency, getOptions, getOverview, getProfile, grantConsent, revokeConsent, saveProfile, unflagAccess } from "./api";
 import { Consents } from "./Consents";
 import { Emergency } from "./Emergency";
 import { Landing } from "./Landing";
@@ -19,7 +19,7 @@ import type { AccessEntry, Consent, ConsentOption } from "./types";
 vi.mock("./api", async importOriginal => ({
   ...(await importOriginal<typeof import("./api")>()),
   getAccess: vi.fn(), getConsents: vi.fn(), getEmergency: vi.fn(), getOptions: vi.fn(), getOverview: vi.fn(), getProfile: vi.fn(),
-  grantConsent: vi.fn(), revokeConsent: vi.fn(), saveProfile: vi.fn(),
+  grantConsent: vi.fn(), revokeConsent: vi.fn(), saveProfile: vi.fn(), flagAccess: vi.fn(), unflagAccess: vi.fn(),
 }));
 vi.mock("qrcode", () => ({ default: { toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,AAAA") } }));
 
@@ -180,6 +180,30 @@ describe("who has looked", () => {
     expect(screen.getByText(/Bị chặn hoặc không thành công/)).toBeTruthy();
     expect(screen.getByText(/Nội dung đã xem không được lưu ở đây/)).toBeTruthy();
   });
+  it("lets the person mark a look they do not recognise, and shows what to do next", async () => {
+    vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [entry()] });
+    vi.mocked(flagAccess).mockResolvedValue({ id: "e1", flagged: true });
+    wrap(<Access />);
+    await userEvent.click(await screen.findByRole("button", { name: /Tôi không nhận ra lần xem của Bệnh viện Đà Nẵng/ }));
+    await waitFor(() => expect(vi.mocked(flagAccess)).toHaveBeenCalledWith(expect.anything(), "e1"));
+    expect(await screen.findByText(/Bạn không nhận ra lần xem này/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Mở Đồng thuận" }).getAttribute("href")).toBe("/dong-thuan");
+    expect(screen.getAllByText("Đã đánh dấu").length).toBeGreaterThan(0);
+  });
+  it("takes the mark back", async () => {
+    vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [entry({ flagged: true })] });
+    vi.mocked(unflagAccess).mockResolvedValue({ id: "e1", flagged: false });
+    wrap(<Access />);
+    await userEvent.click(await screen.findByRole("button", { name: /Bỏ đánh dấu lần xem của Bệnh viện Đà Nẵng/ }));
+    await waitFor(() => expect(vi.mocked(unflagAccess)).toHaveBeenCalledWith(expect.anything(), "e1"));
+    expect(await screen.findByRole("button", { name: /Tôi không nhận ra lần xem/ })).toBeTruthy();
+  });
+  it("does not offer the mark on a request that was refused", async () => {
+    vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [entry({ outcome: "blocked" })] });
+    wrap(<Access />);
+    await screen.findByText(/xin xem/);
+    expect(screen.queryByRole("button", { name: /Tôi không nhận ra/ })).toBeNull();
+  });
   it("narrows to one place", async () => {
     vi.mocked(getAccess).mockResolvedValue({ truncated: false, generatedAt: "", entries: [entry(), entry({ id: "e2", who: "Nhà thuốc" })] });
     wrap(<Access />);
@@ -236,7 +260,7 @@ describe("emergency", () => {
 describe("overview", () => {
   it("flags emergency accesses waiting for review and shows the sentences", async () => {
     vi.mocked(getOverview).mockResolvedValue({ activeConsents: 2, parties: 2, accessLast30Days: 5, pendingEmergency: 1, lastAccess: entry(), expiringSoon: [consent()], places: [{ who: "Bệnh viện Đà Nẵng", consents: [consent()] }], daily: [{ date: "2026-11-19", count: 2, blocked: 1 }, { date: "2026-11-20", count: 0, blocked: 0 }], recent: [entry()], lines: ["Hiện có 2 nơi được phép xem dữ liệu của bạn."],
-      month: { month: "2026-11", label: "11/2026", looks: 3, places: 2, previousLooks: 1, blocked: 1, emergency: 0, granted: 1, revoked: 0, topPlace: { who: "Bệnh viện Đà Nẵng", count: 2 }, lines: ["Tháng 11/2026 có 3 lượt truy cập dữ liệu của bạn từ 2 nơi.", "Nhiều hơn tháng trước (1 lượt)."] } });
+      flagged: 1, month: { month: "2026-11", label: "11/2026", looks: 3, places: 2, previousLooks: 1, blocked: 1, emergency: 0, granted: 1, revoked: 0, topPlace: { who: "Bệnh viện Đà Nẵng", count: 2 }, lines: ["Tháng 11/2026 có 3 lượt truy cập dữ liệu của bạn từ 2 nơi.", "Nhiều hơn tháng trước (1 lượt)."] } });
     wrap(<Overview />);
     expect(await screen.findByText("1 lần truy cập cấp cứu đang chờ rà soát")).toBeTruthy();
     expect(screen.getByText("Hiện có 2 nơi được phép xem dữ liệu của bạn.")).toBeTruthy();
@@ -245,9 +269,15 @@ describe("overview", () => {
     expect(screen.getByRole("img", { name: /tổng 2, trong đó 1 bị chặn/ })).toBeTruthy();
   });
 
+  it("reminds the person of looks they marked", async () => {
+    vi.mocked(getOverview).mockResolvedValue({ activeConsents: 0, parties: 0, accessLast30Days: 0, pendingEmergency: 0, lastAccess: null, expiringSoon: [], places: [], daily: [], recent: [], lines: [], flagged: 2,
+      month: { month: "2026-11", label: "11/2026", looks: 0, places: 0, previousLooks: 0, blocked: 0, emergency: 0, granted: 0, revoked: 0, topPlace: null, lines: [] } });
+    wrap(<Overview />);
+    expect(await screen.findByText("Bạn đã đánh dấu 2 lần xem không nhận ra")).toBeTruthy();
+  });
   it("tells the month in plain sentences and says it is not made by AI", async () => {
     vi.mocked(getOverview).mockResolvedValue({ activeConsents: 0, parties: 0, accessLast30Days: 0, pendingEmergency: 0, lastAccess: null, expiringSoon: [], places: [], daily: [], recent: [], lines: [],
-      month: { month: "2026-11", label: "11/2026", looks: 0, places: 0, previousLooks: 0, blocked: 0, emergency: 0, granted: 0, revoked: 0, topPlace: null, lines: ["Tháng 11/2026 chưa có ai truy cập dữ liệu của bạn."] } });
+      flagged: 0, month: { month: "2026-11", label: "11/2026", looks: 0, places: 0, previousLooks: 0, blocked: 0, emergency: 0, granted: 0, revoked: 0, topPlace: null, lines: ["Tháng 11/2026 chưa có ai truy cập dữ liệu của bạn."] } });
     wrap(<Overview />);
     expect(await screen.findByText("Tháng 11/2026 của bạn")).toBeTruthy();
     expect(screen.getByText("Tháng 11/2026 chưa có ai truy cập dữ liệu của bạn.")).toBeTruthy();
