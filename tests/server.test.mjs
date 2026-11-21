@@ -142,6 +142,9 @@ test("the overview counts only what Junctura reports", async () => {
     assert.equal(overview.daily.length, 14);
     assert.equal(overview.daily.at(-1).date, "2026-11-20");
     assert.deepEqual(overview.recent, []);
+    assert.equal(overview.month.month, "2026-11");
+    assert.equal(overview.month.granted, 2);
+    assert.equal(overview.month.looks, 0);
   } finally { await app.close(); }
 });
 
