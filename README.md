@@ -54,6 +54,7 @@ Tài khoản nhân viên (Clinic, Hospital, Pharmacy, Insurance) không vào đ�
 **Ai đã xem dữ liệu của tôi**
 - Nhật ký từ Junctura: ai, lúc nào, loại dữ liệu, mục đích, kết quả (đã xem, đang xử lý, bị chặn). Nhóm theo ngày (giờ Việt Nam), có dải số liệu (lượt truy cập, số nơi, bị chặn, cấp cứu); lọc theo 7 ngày, 30 ngày, tất cả và theo nơi xem.
 - Nhật ký **không chứa nội dung** đã xem, chỉ cho biết có lần truy cập.
+- **Tải nhật ký (CSV)**: lưu đúng các dòng đang hiện (theo bộ lọc) thành tệp mở được bằng Excel, giờ Việt Nam, để giữ lại hoặc đưa khi khiếu nại. Tệp không chứa nội dung đã xem.
 
 **Cấp cứu**
 - Khi tính mạng nguy cấp, nơi khám có thể xin xem dữ liệu mà chưa có đồng ý, kèm lý do. MyHealth giải thích quy trình ba bước, liệt kê các lần đó và trạng thái rà soát (chờ, hợp lý, không hợp lý).
@@ -221,7 +222,7 @@ MyHealth **không cần** `JUNCTURA_APP_CLIENT_SECRET`: nó không gọi Junctur
 | --- | --- | --- |
 | Tổng quan | `/` | Tóm tắt, biểu đồ 14 ngày, nơi đang được xem, lần gần đây, cảnh báo cấp cứu |
 | Đồng thuận | `/dong-thuan` | Cho phép (có gợi ý), thu hồi, lịch sử |
-| Ai đã xem | `/ai-da-xem` | Nhật ký truy cập theo ngày, lọc theo thời gian và nơi |
+| Ai đã xem | `/ai-da-xem` | Nhật ký truy cập theo ngày, lọc theo thời gian và nơi, tải CSV |
 | Cấp cứu | `/cap-cuu` | Các lần truy cập cấp cứu và kết quả rà soát |
 | Của tôi | `/thong-tin` | Mã QR, liên hệ khẩn cấp, nhóm máu, ghi chú |
 | Cài đặt | `/cai-dat` | Cỡ chữ, giao diện tối, dữ liệu ứng dụng lưu |

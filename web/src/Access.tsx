@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Junctura Contributors
 // SPDX-License-Identifier: Apache-2.0
-import { AlertBanner, Badge, Card, EmptyState, PageHeader, SegmentedControl, SelectField, Section, StatStrip } from "@junctura/health-ui";
+import { AlertBanner, Badge, Button, Card, EmptyState, PageHeader, SegmentedControl, SelectField, Section, StatStrip } from "@junctura/health-ui";
+import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getAccess } from "./api";
-import { dayHeading, groupByDay, timeOf, withinDays } from "./format";
+import { accessCsv, dayHeading, dayKey, groupByDay, timeOf, withinDays } from "./format";
 import { OutcomeBadge, PlaceAvatar } from "./parts";
 import { Remote, useRemote, useSession } from "./session";
 
@@ -17,9 +18,18 @@ export function Access() {
   const shown = useMemo(() => withinDays(entries.filter(entry => !who || entry.who === who), Number(days)).sort((a, b) => b.at.localeCompare(a.at)), [entries, who, days]);
   const groups = useMemo(() => groupByDay(shown), [shown]);
 
+  const download = () => {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([accessCsv(shown)], { type: "text/csv;charset=utf-8" }));
+    link.download = `nhat-ky-truy-cap-${dayKey(new Date())}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Ai đã xem dữ liệu của tôi" description="Mỗi lần có nơi hỏi dữ liệu của bạn qua Junctura đều được ghi lại ở đây, kể cả lần bị chặn." />
+      <PageHeader title="Ai đã xem dữ liệu của tôi" description="Mỗi lần có nơi hỏi dữ liệu của bạn qua Junctura đều được ghi lại ở đây, kể cả lần bị chặn."
+        actions={<Button variant="secondary" disabled={shown.length === 0} icon={<Download aria-hidden className="size-4" />} onClick={download}>Tải nhật ký (CSV)</Button>} />
       <Remote state={state} reload={reload}>{data => (
         <>
           <div className="flex flex-wrap items-end gap-4">
@@ -51,7 +61,7 @@ export function Access() {
               </Card>
             </Section>
           ))}
-          <p className="text-sm text-muted">Nhật ký chỉ cho biết ai, khi nào, loại dữ liệu và mục đích. Nội dung đã xem không được lưu ở đây.</p>
+          <p className="text-sm text-muted">Nhật ký chỉ cho biết ai, khi nào, loại dữ liệu và mục đích. Nội dung đã xem không được lưu ở đây. Tệp CSV gồm đúng các dòng đang hiện ở trên.</p>
         </>
       )}</Remote>
     </div>

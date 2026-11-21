@@ -9,6 +9,12 @@ All notable changes to Junctura MyHealth are recorded here. The format follows
 
 ## Unreleased
 
+### Added
+
+- **Download the access log** as a CSV file (Who has looked): exactly the rows on screen, Vietnam time, with a byte
+  order mark for Excel, spreadsheet formulas defused. It holds who, when, kind of data, purpose and outcome, never the
+  content that was read.
+
 ### Changed
 
 - Redesigned the interface: Overview shows places allowed, a 14-day activity chart with a text alternative and the
