@@ -30,7 +30,7 @@ Dữ liệu sức khỏe của một người nằm rải rác ở trạm y tế
 - **Theo dõi** — xem mọi lần có nơi hỏi dữ liệu của bạn, kể cả lần bị chặn và các lần truy cập cấp cứu.
 - **Thu hồi** — đổi ý bằng một lần bấm, có hiệu lực ngay.
 
-MyHealth **không giữ bệnh án**. Đồng thuận và nhật ký truy cập do Junctura (Tầng 1) lưu và bảo vệ bằng nhật ký chuỗi băm; MyHealth chỉ hiển thị và gửi yêu cầu của chính người bệnh. Chỉ phần người bệnh tự khai (liên hệ khẩn cấp, nhóm máu, ghi chú) được lưu cục bộ.
+MyHealth **không giữ bệnh án**. Đồng thuận và nhật ký truy cập do Junctura (Tầng 1) lưu và bảo vệ bằng nhật ký chuỗi băm; MyHealth chỉ hiển thị và gửi yêu cầu của chính người bệnh. Chỉ phần người bệnh tự khai (liên hệ khẩn cấp, nhóm máu, ghi chú) và mã của những lượt xem họ đánh dấu "không nhận ra" được lưu cục bộ.
 
 > Đây là sản phẩm demo cho cuộc thi; dữ liệu là **dữ liệu giả lập**, không có thông tin người thật.
 
@@ -55,6 +55,7 @@ Tài khoản nhân viên (Clinic, Hospital, Pharmacy, Insurance) không vào đ�
 **Ai đã xem dữ liệu của tôi**
 - Nhật ký từ Junctura: ai, lúc nào, loại dữ liệu, mục đích, kết quả (đã xem, đang xử lý, bị chặn). Nhóm theo ngày (giờ Việt Nam), có dải số liệu (lượt truy cập, số nơi, bị chặn, cấp cứu); lọc theo 7 ngày, 30 ngày, tất cả và theo nơi xem.
 - Nhật ký **không chứa nội dung** đã xem, chỉ cho biết có lần truy cập.
+- **Đánh dấu lượt xem lạ**: bấm "Tôi không nhận ra lần này" ở một lượt đã xem. Lượt đó có nhãn "Đã đánh dấu", kèm gợi ý thu hồi đồng thuận của nơi đó (đường dẫn sang Đồng thuận) và có thể bỏ đánh dấu. Tổng quan nhắc số lượt đã đánh dấu. Dấu chỉ nằm trong Sổ sức khỏe của người bệnh để nhắc họ, không báo cho nơi đã xem và không đổi nhật ký của Junctura.
 - **Tải nhật ký (CSV)**: lưu đúng các dòng đang hiện (theo bộ lọc) thành tệp mở được bằng Excel, giờ Việt Nam, để giữ lại hoặc đưa khi khiếu nại. Tệp không chứa nội dung đã xem.
 
 **Cấp cứu**
@@ -158,7 +159,7 @@ Danh sách lấy từ [hợp đồng năng lực dùng chung](https://github.com
 | Kiểm tra đầu vào | Nơi, mục đích và thời hạn được kiểm tra ở máy chủ trước khi gửi; nội dung không hợp lệ không bao giờ tới Junctura |
 | Không lộ nội dung | Nhật ký truy cập chỉ có ai, khi nào, loại dữ liệu, mục đích, kết quả |
 | Lỗi trung thực | Khi Junctura không trả lời, ứng dụng nói rõ "chưa kết nối được", không hiện danh sách rỗng như thể chưa có ai xem |
-| Dữ liệu cục bộ | Chỉ phần tự khai, trong SQLite theo `subject` của người đăng nhập |
+| Dữ liệu cục bộ | Phần tự khai và mã các lượt xem đã đánh dấu, trong SQLite theo `subject` của người đăng nhập |
 | Bí mật | Không có khóa hay mật khẩu nào trong ứng dụng; mật khẩu chỉ nhập trên trang của Junctura |
 | Tiêu đề bảo mật | CSP chỉ cho phép chính nó và nhà cấp định danh; `X-Frame-Options: DENY`; không lưu bộ nhớ đệm câu trả lời API |
 
@@ -236,6 +237,7 @@ MyHealth **không cần** `JUNCTURA_APP_CLIENT_SECRET`: nó không gọi Junctur
 | `GET/POST /api/consents`, `POST /api/consents/{id}/revoke` | Danh sách, cấp, thu hồi (chuyển tới Junctura `/v1/me/consents`) |
 | `GET /api/access`, `GET /api/emergency` | Nhật ký truy cập, truy cập cấp cứu (từ `/v1/me/data-access`) |
 | `GET/PUT /api/profile` | Thông tin tự khai |
+| `POST/DELETE /api/access/:id/flag` | Đánh dấu hoặc bỏ đánh dấu "không nhận ra" một lượt trong nhật ký của chính người bệnh |
 
 Mọi endpoint (trừ `/api/config`) cần token của tài khoản `patient`.
 
@@ -295,8 +297,10 @@ GitHub Actions chạy cả bốn lệnh ở mỗi Pull Request.
 - [x] Nhật ký "Ai đã xem", truy cập cấp cứu, tổng quan.
 - [x] Thông tin tự khai và mã QR người bệnh.
 - [x] Đóng gói Docker, quy trình phát hành `.tar.gz`.
-- [ ] Gia hạn đồng thuận (hiện thu hồi rồi cho phép lại).
+- [x] Gia hạn đồng thuận, tạm khóa tất cả, gói cho phép nhanh.
+- [x] Đánh dấu lượt xem lạ kèm gợi ý thu hồi.
 - [ ] Người bệnh phản hồi một lần truy cập cấp cứu (Junctura hiện chỉ cho cơ quan quản lý rà soát).
+- [ ] Báo lượt xem lạ cho nơi đã xem hoặc cơ quan quản lý (cần thêm hợp đồng ở Tầng 1; hiện dấu chỉ nằm trong Sổ sức khỏe).
 - [ ] Xem hồ sơ của chính mình (cần thêm một hợp đồng `health-record-view` ở junctura-health).
 - [ ] Nhắc tiêm chủng.
 - [ ] Bản phát hành `v0.1.0` kèm gói `.tar.gz`.

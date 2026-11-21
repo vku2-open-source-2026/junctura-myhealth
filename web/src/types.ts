@@ -22,7 +22,7 @@ export type Outcome = "done" | "pending" | "blocked" | "unknown";
 export type Review = "pending" | "justified" | "unjustified" | null;
 export interface AccessEntry {
   id: string; at: string; who: string; whoAppId?: string; provider: string | null; what: string;
-  purpose: string; purposeLabel: string; outcome: Outcome; emergency: boolean; review: Review;
+  purpose: string; purposeLabel: string; outcome: Outcome; emergency: boolean; review: Review; flagged?: boolean;
 }
 
 export interface DayCount { date: string; count: number; blocked: number }
@@ -37,7 +37,7 @@ export interface MonthSummary {
 
 export interface Overview {
   activeConsents: number; parties: number; accessLast30Days: number; pendingEmergency: number;
-  lastAccess: AccessEntry | null; expiringSoon: Consent[]; places: Place[]; daily: DayCount[]; recent: AccessEntry[]; lines: string[]; month: MonthSummary;
+  lastAccess: AccessEntry | null; expiringSoon: Consent[]; places: Place[]; daily: DayCount[]; recent: AccessEntry[]; lines: string[]; month: MonthSummary; flagged: number;
 }
 
 export interface Profile { contactName: string; contactPhone: string; bloodType: string; note: string; updatedAt: string | null; patientCode: string | null }

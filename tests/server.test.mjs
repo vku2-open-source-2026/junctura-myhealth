@@ -214,3 +214,33 @@ test("recent keeps the five newest accesses", async () => {
     assert.ok(recent[0].at > recent[4].at);
   } finally { await app.close(); }
 });
+
+test("a patient can mark an access line as not recognised, and take the mark back", async () => {
+  const app = await startApp();
+  const an = app.signer.sign();
+  const binh = app.signer.sign({ preferred_username: "benhnhan.binh" });
+  const id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  app.gateway.accessLog = async () => ({ entries: [accessLine(), accessLine({ executionId: id })], truncated: false, generatedAt: "2026-11-20T10:00:00.000Z" });
+  try {
+    const before = (await app.call("/api/access", { token: an })).body.entries;
+    assert.ok(before.every(entry => entry.flagged === false));
+    assert.deepEqual((await app.call(`/api/access/${id}/flag`, { token: an, method: "POST" })).body, { id, flagged: true });
+    assert.deepEqual((await app.call(`/api/access/${id}/flag`, { token: an, method: "POST" })).body, { id, flagged: true }, "marking twice is harmless");
+    const marked = (await app.call("/api/access", { token: an })).body.entries;
+    assert.deepEqual(marked.filter(entry => entry.flagged).map(entry => entry.id), [id]);
+    assert.equal((await app.call("/api/overview", { token: an })).body.flagged, 1);
+    assert.equal((await app.call("/api/overview", { token: binh })).body.flagged, 0, "the mark belongs to one patient");
+    assert.deepEqual((await app.call(`/api/access/${id}/flag`, { token: an, method: "DELETE" })).body, { id, flagged: false });
+    assert.equal((await app.call("/api/overview", { token: an })).body.flagged, 0);
+  } finally { await app.close(); }
+});
+
+test("only a line of the patient's own access log can be marked", async () => {
+  const app = await startApp();
+  const an = app.signer.sign();
+  try {
+    assert.equal((await app.call("/api/access/cccccccc-cccc-4ccc-8ccc-cccccccccccc/flag", { token: an, method: "POST" })).status, 404);
+    assert.equal((await app.call("/api/access/not-an-id/flag", { token: an, method: "POST" })).status, 405);
+    assert.equal((await app.call("/api/access/cccccccc-cccc-4ccc-8ccc-cccccccccccc/flag", { method: "POST" })).status, 401);
+  } finally { await app.close(); }
+});
