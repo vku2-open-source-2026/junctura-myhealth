@@ -48,6 +48,7 @@ Tài khoản nhân viên (Clinic, Hospital, Pharmacy, Insurance) không vào đ�
 **Đồng thuận**
 - Cho phép một nơi xem một loại dữ liệu (hồ sơ chuyển tuyến, dị ứng, tiêm chủng, đơn thuốc, chi phí) **cho đúng mục đích** và trong 30 ngày đến 1 năm.
 - "Đang cho phép" gom theo từng nơi, kèm số ngày còn lại (màu và chữ báo khi còn dưới 14 ngày); mục "Có thể bạn muốn cho phép" gợi ý các nơi chưa được xem gì, bấm là mở sẵn biểu mẫu; "Lịch sử đồng thuận" cho các lần đã hết hạn hoặc đã thu hồi.
+- **Tạm khóa tất cả**: một nút thu hồi mọi đồng thuận đang có sau một bước xác nhận (nói rõ số đồng thuận và số nơi). **Gia hạn** hiện khi còn dưới 14 ngày: cho phép lại 90 ngày rồi thu hồi bản cũ. **Gói cho phép nhanh** ("Đi khám ở bệnh viện", "Mua thuốc ở nhà thuốc", "Thanh toán bảo hiểm y tế") liệt kê từng mục để người bệnh xem lại trước khi đồng ý; mục đã cho phép thì không đưa vào gói.
 - Thu hồi có hộp xác nhận nói rõ hậu quả; từ lúc thu hồi, nơi đó bị chặn.
 - Lựa chọn được kiểm tra ở máy chủ trước khi gửi (nơi, mục đích nằm trong hợp đồng, thời hạn 1–365 ngày).
 
@@ -73,7 +74,7 @@ Tài khoản nhân viên (Clinic, Hospital, Pharmacy, Insurance) không vào đ�
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/06-overview-desktop.png" alt="Tổng quan"><br><sub><b>Tổng quan</b>: số nơi đang được xem, biểu đồ lượt truy cập 14 ngày, thẻ theo từng nơi, các lần gần đây</sub></td>
-    <td width="50%"><img src="docs/screenshots/07-consents-desktop.png" alt="Đồng thuận"><br><sub><b>Đồng thuận</b>: gom theo nơi, gợi ý nơi chưa cho phép, lịch sử</sub></td>
+    <td width="50%"><img src="docs/screenshots/07-consents-desktop.png" alt="Đồng thuận"><br><sub><b>Đồng thuận</b>: gom theo nơi, tạm khóa tất cả, gia hạn, gói nhanh, lịch sử</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/08-access-desktop.png" alt="Ai đã xem"><br><sub><b>Ai đã xem</b>: nhóm theo ngày, lọc theo thời gian và nơi</sub></td>
