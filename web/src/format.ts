@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Junctura Contributors
 // SPDX-License-Identifier: Apache-2.0
-import type { ConsentState, Outcome, Review } from "./types";
+import type { AccessEntry, ConsentState, Outcome, Review } from "./types";
 
 const DAY = 86_400_000;
 
@@ -59,4 +59,26 @@ export function groupByDay<T extends { at: string }>(items: T[]): { day: string;
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   return [...groups].map(([day, list]) => ({ day, items: list }));
+}
+
+const csvCell = (value: string) => {
+  // A leading formula character would be run by a spreadsheet, so it is defused.
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return /[",\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
+};
+
+/** "20/11/2026 14:05" in Vietnam time. */
+const dateTimeOf = (iso: string) => `${dayKey(iso).split("-").reverse().join("/")} ${timeOf(iso)}`;
+
+/**
+ * The access log as a spreadsheet, one row per look, newest first. It holds what the screen holds
+ * (who, when, kind of data, purpose, outcome) and never the content that was read.
+ */
+export function accessCsv(entries: AccessEntry[]): string {
+  const head = ["Thời gian", "Nơi xem", "Loại dữ liệu", "Mục đích", "Kết quả", "Cấp cứu", "Rà soát cấp cứu"];
+  const rows = [...entries].sort((a, b) => b.at.localeCompare(a.at)).map(entry => [
+    dateTimeOf(entry.at), entry.who, entry.what, entry.purposeLabel, outcomeLabel[entry.outcome], entry.emergency ? "Có" : "Không", entry.emergency ? reviewLabel(entry.review) : "",
+  ]);
+  // The byte order mark makes Excel read the file as UTF-8.
+  return `\uFEFF${[head, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
 }
