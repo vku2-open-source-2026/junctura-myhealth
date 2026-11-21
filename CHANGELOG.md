@@ -11,6 +11,10 @@ All notable changes to Junctura MyHealth are recorded here. The format follows
 
 ### Added
 
+- **Mark a look you do not recognise** on Who has looked: a button on each look, a "Đã đánh dấu" label, a hint to
+  revoke that place's consent (link to Consents) and a way to take the mark back. The Overview reminds how many looks
+  are marked. Marks are kept in the local SQLite per patient (only the log line's id), never sent to the place or to
+  Junctura. New `POST/DELETE /api/access/:id/flag`; only lines of the patient's own log can be marked.
 - **Pause everything** on Consents: one button revokes every active consent after a single confirmation that says how
   many consents and places it covers. A partial failure is reported ("revoked 2, 1 left") and can be retried.
 - **Renew** a consent that ends within 14 days: grants it again for 90 days, then revokes the old one. If granting fails
