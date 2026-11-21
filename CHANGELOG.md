@@ -11,6 +11,13 @@ All notable changes to Junctura MyHealth are recorded here. The format follows
 
 ### Added
 
+- **Pause everything** on Consents: one button revokes every active consent after a single confirmation that says how
+  many consents and places it covers. A partial failure is reported ("revoked 2, 1 left") and can be retried.
+- **Renew** a consent that ends within 14 days: grants it again for 90 days, then revokes the old one. If granting fails
+  the old consent is left untouched.
+- **Quick bundles** ("Visit the hospital", "Buy medicine", "Insurance claim"): the person reviews each item and picks a
+  duration; items already allowed are skipped. Matching uses the application id, so a place whose name is longer than
+  the option name ("Bệnh viện Đà Nẵng") is recognised.
 - **This month in plain sentences** on the Overview: looks and places this calendar month (Vietnam time), the place
   that looked most, comparison with last month, blocked and emergency looks, consents given and revoked. Composed by
   fixed rules from the access log (no model) and never says what was read. `/api/overview` returns it as `month`.
