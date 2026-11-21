@@ -183,13 +183,23 @@ describe("emergency", () => {
 
 describe("overview", () => {
   it("flags emergency accesses waiting for review and shows the sentences", async () => {
-    vi.mocked(getOverview).mockResolvedValue({ activeConsents: 2, parties: 2, accessLast30Days: 5, pendingEmergency: 1, lastAccess: entry(), expiringSoon: [consent()], places: [{ who: "Bệnh viện Đà Nẵng", consents: [consent()] }], daily: [{ date: "2026-11-19", count: 2, blocked: 1 }, { date: "2026-11-20", count: 0, blocked: 0 }], recent: [entry()], lines: ["Hiện có 2 nơi được phép xem dữ liệu của bạn."] });
+    vi.mocked(getOverview).mockResolvedValue({ activeConsents: 2, parties: 2, accessLast30Days: 5, pendingEmergency: 1, lastAccess: entry(), expiringSoon: [consent()], places: [{ who: "Bệnh viện Đà Nẵng", consents: [consent()] }], daily: [{ date: "2026-11-19", count: 2, blocked: 1 }, { date: "2026-11-20", count: 0, blocked: 0 }], recent: [entry()], lines: ["Hiện có 2 nơi được phép xem dữ liệu của bạn."],
+      month: { month: "2026-11", label: "11/2026", looks: 3, places: 2, previousLooks: 1, blocked: 1, emergency: 0, granted: 1, revoked: 0, topPlace: { who: "Bệnh viện Đà Nẵng", count: 2 }, lines: ["Tháng 11/2026 có 3 lượt truy cập dữ liệu của bạn từ 2 nơi.", "Nhiều hơn tháng trước (1 lượt)."] } });
     wrap(<Overview />);
     expect(await screen.findByText("1 lần truy cập cấp cứu đang chờ rà soát")).toBeTruthy();
     expect(screen.getByText("Hiện có 2 nơi được phép xem dữ liệu của bạn.")).toBeTruthy();
     expect(screen.getByText("Ai đang được xem dữ liệu của bạn")).toBeTruthy();
     expect(screen.getByText("Gần đây")).toBeTruthy();
     expect(screen.getByRole("img", { name: /tổng 2, trong đó 1 bị chặn/ })).toBeTruthy();
+  });
+
+  it("tells the month in plain sentences and says it is not made by AI", async () => {
+    vi.mocked(getOverview).mockResolvedValue({ activeConsents: 0, parties: 0, accessLast30Days: 0, pendingEmergency: 0, lastAccess: null, expiringSoon: [], places: [], daily: [], recent: [], lines: [],
+      month: { month: "2026-11", label: "11/2026", looks: 0, places: 0, previousLooks: 0, blocked: 0, emergency: 0, granted: 0, revoked: 0, topPlace: null, lines: ["Tháng 11/2026 chưa có ai truy cập dữ liệu của bạn."] } });
+    wrap(<Overview />);
+    expect(await screen.findByText("Tháng 11/2026 của bạn")).toBeTruthy();
+    expect(screen.getByText("Tháng 11/2026 chưa có ai truy cập dữ liệu của bạn.")).toBeTruthy();
+    expect(screen.getByText(/không dùng AI/)).toBeTruthy();
   });
 });
 

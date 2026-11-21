@@ -35,6 +35,11 @@ export function Overview() {
             </Card>
           </div>
 
+          <Card title={`Tháng ${overview.month.label} của bạn`} actions={<Badge tone="neutral">Tính đến hôm nay</Badge>}>
+            <ul className="space-y-2 text-lg text-ink">{overview.month.lines.map(line => <li key={line} className="flex gap-2"><span aria-hidden className="mt-3 size-1.5 shrink-0 rounded-full bg-brand" /><span>{line}</span></li>)}</ul>
+            <p className="mt-4 text-sm text-muted">Tóm tắt soạn theo quy tắc cố định từ nhật ký của Junctura, không dùng AI và không nói về nội dung đã xem.</p>
+          </Card>
+
           <Section title="Ai đang được xem dữ liệu của bạn" description="Mỗi thẻ là một nơi bạn đã cho phép." count={overview.places.length}
             actions={<Link to="/dong-thuan" className="inline-flex items-center gap-1 font-semibold text-brand hover:underline">Quản lý <ArrowRight aria-hidden className="size-4" /></Link>}>
             {overview.places.length === 0 ? (
