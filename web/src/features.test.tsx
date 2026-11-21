@@ -62,6 +62,58 @@ describe("consents", () => {
     await waitFor(() => expect(vi.mocked(revokeConsent)).toHaveBeenCalledWith(expect.anything(), "c1"));
   });
 
+  it("revokes every active consent after one confirmation", async () => {
+    vi.mocked(getConsents).mockResolvedValue([consent(), consent({ id: "c3", who: "Nhà thuốc" })]);
+    vi.mocked(getOptions).mockResolvedValue([option]);
+    vi.mocked(revokeConsent).mockClear();
+    vi.mocked(revokeConsent).mockResolvedValue(consent({ state: "revoked" }));
+    wrap(<Consents />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tạm khóa tất cả" }));
+    expect(vi.mocked(revokeConsent)).not.toHaveBeenCalled();
+    expect(screen.getByText("2 đồng thuận")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Thu hồi tất cả" }));
+    await waitFor(() => expect(vi.mocked(revokeConsent)).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(revokeConsent)).toHaveBeenCalledWith(expect.anything(), "c1");
+    expect(vi.mocked(revokeConsent)).toHaveBeenCalledWith(expect.anything(), "c3");
+  });
+
+  it("renews a consent that ends soon by granting a new one", async () => {
+    const soon = new Date(Date.now() + 5 * 86_400_000).toISOString();
+    vi.mocked(getConsents).mockResolvedValue([consent({ who: "Bệnh viện", capabilityId: "urn:y", expiresAt: soon })]);
+    vi.mocked(getOptions).mockResolvedValue([option]);
+    vi.mocked(grantConsent).mockClear();
+    vi.mocked(grantConsent).mockResolvedValue(consent());
+    vi.mocked(revokeConsent).mockResolvedValue(consent({ state: "revoked" }));
+    wrap(<Consents />);
+    await userEvent.click(await screen.findByRole("button", { name: /Gia hạn 90 ngày cho Bệnh viện/ }));
+    await waitFor(() => expect(vi.mocked(grantConsent)).toHaveBeenCalledWith(expect.anything(), { optionId: option.id, purposes: ["treatment"], days: 90 }));
+    await waitFor(() => expect(vi.mocked(revokeConsent)).toHaveBeenCalledWith(expect.anything(), "c1"));
+  });
+
+  it("does not offer renewal when the consent has plenty of time", async () => {
+    vi.mocked(getConsents).mockResolvedValue([consent({ capabilityId: "urn:y" })]);
+    vi.mocked(getOptions).mockResolvedValue([option]);
+    wrap(<Consents />);
+    await screen.findByText("Bệnh viện Đà Nẵng");
+    expect(screen.queryByRole("button", { name: /Gia hạn/ })).toBeNull();
+  });
+
+  it("grants every item of a bundle after the person reviews it", async () => {
+    const referral = { ...option, id: "junctura-hospital:referral-summary", capabilityId: "urn:ref", capabilitySlug: "referral-summary", shares: "Hồ sơ chuyển tuyến từ trạm y tế", purposes: [{ value: "referral_intake", label: "Để tiếp nhận chuyển tuyến" }] };
+    const allergy = { ...option, id: "junctura-hospital:allergy-list", capabilityId: "urn:al" };
+    vi.mocked(getConsents).mockResolvedValue([]);
+    vi.mocked(getOptions).mockResolvedValue([referral, allergy]);
+    vi.mocked(grantConsent).mockClear();
+    vi.mocked(grantConsent).mockResolvedValue(consent());
+    wrap(<Consents />);
+    await userEvent.click(await screen.findByRole("button", { name: /Xem gói Đi khám ở bệnh viện/ }));
+    expect(screen.getByText(/Để tiếp nhận chuyển tuyến/)).toBeTruthy();
+    expect(vi.mocked(grantConsent)).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Đồng ý cho phép" }));
+    await waitFor(() => expect(vi.mocked(grantConsent)).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(grantConsent)).toHaveBeenCalledWith(expect.anything(), { optionId: "junctura-hospital:referral-summary", purposes: ["referral_intake"], days: 30 });
+  });
+
   it("grants a consent with the chosen purposes and duration", async () => {
     vi.mocked(getConsents).mockResolvedValue([]);
     vi.mocked(getOptions).mockResolvedValue([option]);
