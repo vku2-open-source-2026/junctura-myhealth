@@ -11,6 +11,9 @@ All notable changes to Junctura MyHealth are recorded here. The format follows
 
 ### Added
 
+- **This month in plain sentences** on the Overview: looks and places this calendar month (Vietnam time), the place
+  that looked most, comparison with last month, blocked and emergency looks, consents given and revoked. Composed by
+  fixed rules from the access log (no model) and never says what was read. `/api/overview` returns it as `month`.
 - **Download the access log** as a CSV file (Who has looked): exactly the rows on screen, Vietnam time, with a byte
   order mark for Excel, spreadsheet formulas defused. It holds who, when, kind of data, purpose and outcome, never the
   content that was read.

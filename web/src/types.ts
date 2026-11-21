@@ -29,9 +29,15 @@ export interface DayCount { date: string; count: number; blocked: number }
 /** Active consents given to one place. */
 export interface Place { who: string; whoAppId?: string; consents: Consent[] }
 
+/** What happened to the patient's data this month, as plain sentences. */
+export interface MonthSummary {
+  month: string; label: string; looks: number; places: number; previousLooks: number; blocked: number; emergency: number; granted: number; revoked: number;
+  topPlace: { who: string; count: number } | null; lines: string[];
+}
+
 export interface Overview {
   activeConsents: number; parties: number; accessLast30Days: number; pendingEmergency: number;
-  lastAccess: AccessEntry | null; expiringSoon: Consent[]; places: Place[]; daily: DayCount[]; recent: AccessEntry[]; lines: string[];
+  lastAccess: AccessEntry | null; expiringSoon: Consent[]; places: Place[]; daily: DayCount[]; recent: AccessEntry[]; lines: string[]; month: MonthSummary;
 }
 
 export interface Profile { contactName: string; contactPhone: string; bloodType: string; note: string; updatedAt: string | null; patientCode: string | null }

@@ -60,7 +60,7 @@ Tài khoản nhân viên (Clinic, Hospital, Pharmacy, Insurance) không vào đ�
 - Khi tính mạng nguy cấp, nơi khám có thể xin xem dữ liệu mà chưa có đồng ý, kèm lý do. MyHealth giải thích quy trình ba bước, liệt kê các lần đó và trạng thái rà soát (chờ, hợp lý, không hợp lý).
 
 **Tổng quan và thông tin của tôi**
-- Tổng quan: số nơi đang được xem, biểu đồ lượt truy cập 14 ngày (có chữ mô tả, không chỉ dựa vào màu), thẻ theo từng nơi kèm hạn đồng thuận, năm lần truy cập gần nhất, cảnh báo cấp cứu chờ rà soát, kèm vài câu giải thích bằng lời thường (soạn theo quy tắc cố định, không dùng AI).
+- Tổng quan: **tóm tắt tháng này** bằng vài câu đời thường (số lượt, nơi xem nhiều nhất, so với tháng trước, lượt bị chặn, cấp cứu, số lần cho phép và thu hồi; soạn theo quy tắc cố định, không dùng AI), số nơi đang được xem, biểu đồ lượt truy cập 14 ngày (có chữ mô tả, không chỉ dựa vào màu), thẻ theo từng nơi kèm hạn đồng thuận, năm lần truy cập gần nhất, cảnh báo cấp cứu chờ rà soát, kèm vài câu giải thích bằng lời thường (soạn theo quy tắc cố định, không dùng AI).
 - Thông tin tự khai: người liên hệ khẩn cấp, nhóm máu, ghi chú; mã người bệnh dạng QR để đưa cho nơi khám.
 
 **Thiết kế cho người lớn tuổi**
