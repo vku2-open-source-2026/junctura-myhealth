@@ -95,12 +95,14 @@ export function createApp({ config, patients, verifier, gateway, profiles, appId
       if (path === "/api/consents") return [200, { consents: await loadConsents(token) }];
       if (path === "/api/access") {
         const log = await gatewayOrFail().accessLog(token);
-        return [200, { entries: log.entries.map(accessEntry), truncated: log.truncated === true, generatedAt: log.generatedAt }];
+        const flagged = profiles.flags.list(user.subject);
+        return [200, { entries: log.entries.map(accessEntry).map(entry => ({ ...entry, flagged: flagged.has(entry.id) })), truncated: log.truncated === true, generatedAt: log.generatedAt }];
       }
       if (path === "/api/emergency") return [200, { entries: (await loadAccess(token)).filter(item => item.emergency) }];
       if (path === "/api/overview") {
         const [consents, access] = await Promise.all([loadConsents(token), loadAccess(token)]);
-        return [200, buildOverview({ consents, access, now: now() })];
+        const flagged = profiles.flags.list(user.subject);
+        return [200, { ...buildOverview({ consents, access, now: now() }), flagged: access.filter(item => flagged.has(item.id)).length }];
       }
       if (path === "/api/profile") return [200, { ...profiles.get(user.subject), patientCode: user.patientCode }];
       return undefined;
@@ -114,6 +116,13 @@ export function createApp({ config, patients, verifier, gateway, profiles, appId
         note: text("Ghi chú", { max: 500, required: false }),
       });
       return [200, { ...profiles.save(user.subject, input, now()), patientCode: user.patientCode }];
+    }
+
+    if ((method === "POST" || method === "DELETE") && (match = /^\/api\/access\/([0-9a-f-]{36})\/flag$/.exec(path))) {
+      if (!(await loadAccess(token)).some(item => item.id === match[1])) throw new HttpError(404, "not-found");
+      if (method === "POST") profiles.flags.add(user.subject, match[1], now());
+      else profiles.flags.remove(user.subject, match[1]);
+      return [200, { id: match[1], flagged: method === "POST" }];
     }
 
     if (method === "POST" && path === "/api/consents") {
@@ -140,7 +149,7 @@ export function createApp({ config, patients, verifier, gateway, profiles, appId
     if (method === "POST" && (match = /^\/api\/consents\/([0-9a-f-]{36})\/revoke$/.exec(path))) {
       return [200, consentView(await gatewayOrFail().revokeConsent(token, match[1]))];
     }
-    if (!reading && (path === "/api/profile" || path === "/api/consents" || /^\/api\/consents\//.test(path))) return [405, { error: "method-not-allowed" }];
+    if (!reading && (path === "/api/profile" || path === "/api/consents" || /^\/api\/consents\//.test(path) || /^\/api\/access\//.test(path))) return [405, { error: "method-not-allowed" }];
     return undefined;
   }
 
